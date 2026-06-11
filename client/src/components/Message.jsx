@@ -2,13 +2,10 @@ import React from "react";
 import { assets } from "../assets/assets";
 import moment from "moment";
 import Markdown from "react-markdown";
-import Prism from "prismjs";
-import { useEffect } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const Message = ({ message }) => {
-  useEffect(() => {
-    Prism.highlightAll();
-  }, [message.content]);
   return (
     <div>
       {message.role === "user" ? (
@@ -31,7 +28,27 @@ const Message = ({ message }) => {
             />
           ) : (
             <div className="text-sm dark:text-primary reset-tw">
-              <Markdown>{message.content}</Markdown>
+              <Markdown
+                components={{
+                  code({ inline, className, children }) {
+                    const match = /language-(\w+)/.exec(className || "");
+
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={oneDark}
+                        language={match[1]}
+                        PreTag="div"
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code>{children}</code>
+                    );
+                  },
+                }}
+              >
+                {message.content}
+              </Markdown>
             </div>
           )}
           <span className="text-xs text-gray-400 dark:text-[#B1A6C0]">

@@ -23,6 +23,7 @@ export const textMessageController = async (req, res) => {
       timestamp: Date.now(),
       isImage: false,
     });
+    await chat.save();
 
     const { choices } = await openai.chat.completions.create({
       model: "gemini-2.5-flash",
@@ -39,6 +40,15 @@ export const textMessageController = async (req, res) => {
       timestamp: Date.now(),
       isImage: false,
     };
+    // const rawText = choices[0].message.content;
+
+    // const reply = {
+    //   role: "assistant",
+    //   content: rawText, // 👈 IMPORTANT: yahi AI ka response hai
+    //   timestamp: Date.now(),
+    //   isImage: false,
+    // };
+
     res.json({ success: true, reply });
 
     chat.message.push(reply);
@@ -81,7 +91,7 @@ export const imageMessageController = async (req, res) => {
       process.env.IMAGEKIT_URL_ENDPOINT
     }/ik-genimg-prompt-${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,h-800`;
 
-    //Trigger generation by fetching from Imagekit
+    // //Trigger generation by fetching from Imagekit
     const aiImageResponse = await axios.get(generatedImageUrl, {
       responseType: "arraybuffer",
     });

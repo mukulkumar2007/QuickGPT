@@ -5,11 +5,12 @@ import { useEffect } from "react";
 import { assets } from "../assets/assets";
 import Message from "./Message";
 import { useRef } from "react";
+import toast from "react-hot-toast";
 
 const Chatbox = () => {
   const containerRef = useRef(null);
 
-  const { selectedChat, theme } = useAppContext();
+  const { selectedChat, theme, setUser, token, user, axios } = useAppContext();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +19,44 @@ const Chatbox = () => {
   const [isPublished, setIsPublished] = useState(false);
 
   const onSubmit = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      if (!user) return toast("Login to send Messages");
+      setLoading(true);
+      const promptCopy = prompt;
+      setPrompt("");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: prompt,
+          timestamp: Date.now(),
+          isImage: false,
+        },
+      ]);
+      const { data } = await axios.post(
+        `/api/message/${mode}`,
+        { chatId: selectedChat._id, prompt, isPublished },
+        { headers: { Authorization: token } }
+      );
+      if (data.success) {
+        setMessages((prev) => [...prev, data.reply]);
+        //decrese credits
+        if (mode === "image") {
+          setUser((prev) => ({ ...prev, credits: prev.credits - 2 }));
+        } else {
+          setUser((prev) => ({ ...prev, credits: prev.credits - 1 }));
+        }
+      } else {
+        toast.error(data.message);
+        setPrompt(promptCopy);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setPrompt("");
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -32,7 +70,7 @@ const Chatbox = () => {
 
   useEffect(() => {
     if (selectedChat) {
-      setMessages(selectedChat.messages);
+      setMessages(selectedChat.message || []);
     }
   }, [selectedChat]);
 
@@ -40,7 +78,7 @@ const Chatbox = () => {
     <div className="flex-1 flex flex-col justify-between m-5 md:m-10 xl:mx-30 max-md:mt-14 2xl:pr-40">
       {/* Chat Messages */}
       <div ref={containerRef} className="flex-1 mb-5 overflow-y-scroll">
-        {messages.length === 0 && (
+        {messages?.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center gap-2 text-primary">
             <img
               src={theme === "dark" ? assets.logo_full : assets.logo_full_dark}
@@ -53,7 +91,7 @@ const Chatbox = () => {
           </div>
         )}
 
-        {messages.map((message, index) => (
+        {messages?.map((message, index) => (
           <Message key={index} message={message} />
         ))}
       </div>
@@ -92,9 +130,9 @@ const Chatbox = () => {
           <option className="dark:bg-purple-900" value="text">
             Text
           </option>
-          <option className="dark:bg-purple-900" value="image">
+          {/* <option className="dark:bg-purple-900" value="image">
             Image
-          </option>
+          </option> */}
         </select>
         <input
           onChange={(e) => setPrompt(e.target.value)}
