@@ -35,7 +35,7 @@ const Chatbox = () => {
         },
       ]);
       const { data } = await axios.post(
-        `/api/message/${mode}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/message/${mode}`,
         { chatId: selectedChat._id, prompt, isPublished },
         { headers: { Authorization: token } }
       );

@@ -1,14 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyChats, dummyUserData } from "../assets/assets";
+
 import axios from "axios";
 import toast from "react-hot-toast";
-
-axios.defaults.baseURL = import.meta.env.VITE_SERVER_URL;
 
 const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
+  console.log("API URL:", import.meta.env.VITE_SERVER_URL);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [chats, setChats] = useState([]);
@@ -19,9 +18,12 @@ export const AppContextProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const { data } = await axios.get("/api/user/data", {
-        headers: { Authorization: token },
-      });
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/user/data`,
+        {
+          headers: { Authorization: token },
+        }
+      );
       if (data.success) {
         setUser(data.user);
       } else {
@@ -38,9 +40,12 @@ export const AppContextProvider = ({ children }) => {
     try {
       if (!user) return toast("Login to create a new chat");
       navigate("/");
-      const { data } = await axios.get("/api/chat/create", {
-        headers: { Authorization: token },
-      });
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/chat/create`,
+        {
+          headers: { Authorization: token },
+        }
+      );
       if (data.success) {
         fetchUsersChats();
       }
@@ -51,9 +56,12 @@ export const AppContextProvider = ({ children }) => {
 
   const fetchUsersChats = async () => {
     try {
-      const { data } = await axios.get("/api/chat/get", {
-        headers: { Authorization: token },
-      });
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/chat/get`,
+        {
+          headers: { Authorization: token },
+        }
+      );
       if (data.success) {
         setChats(data.chats);
         //If the user has no chat, create one

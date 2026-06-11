@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import { useAppContext } from "../contexts/AppContext";
-import { data } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -13,7 +12,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = state === "login" ? "/api/user/login" : "/api/user/register";
+    const url =
+      state === "login"
+        ? `${import.meta.env.VITE_SERVER_URL}/api/user/login`
+        : `${import.meta.env.VITE_SERVER_URL}/api/user/register`;
 
     try {
       const { data } = await axios.post(url, { name, email, password });

@@ -36,13 +36,12 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
       );
       if (!confirm) return;
       const { data } = await axios.post(
-        "/api/chat/delete",
+        `${import.meta.env.VITE_SERVER_URL}/api/chat/delete`,
         { chatId },
         { headers: { Authorization: token } }
       );
       if (data.success) {
         setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-        await fetchUsersChats();
         toast.success(data.message);
       }
     } catch (error) {
@@ -119,6 +118,8 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
                 onClick={(e) =>
                   toast.promise(deleteChat(e, chat._id), {
                     loading: "deleting...",
+                    success: "Deleted",
+                    error: "Failed",
                   })
                 }
                 className="hidden group-hover:block w-4 cursor-pointer not-dark:invert"
