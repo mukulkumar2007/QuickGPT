@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
-  console.log("API URL:", import.meta.env.VITE_SERVER_URL);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [chats, setChats] = useState([]);
@@ -47,7 +46,9 @@ export const AppContextProvider = ({ children }) => {
         }
       );
       if (data.success) {
-        fetchUsersChats();
+        setChats((prev) => [data.chat, ...prev]);
+        setSelectedChat(data.chat);
+        return data.chat;
       }
     } catch (error) {
       toast.error(error.message);
@@ -65,7 +66,12 @@ export const AppContextProvider = ({ children }) => {
       if (data.success) {
         setChats(data.chats);
         //If the user has no chat, create one
-        if (data.chats.length > 0) {
+        if (data.chats.length === 0) {
+          const newChat = await createNewChat();
+          setChats([newChat]);
+          setSelectedChat(newChat);
+        } else {
+          setChats(data.chats);
           setSelectedChat(data.chats[0]);
         }
       } else {

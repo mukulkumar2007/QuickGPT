@@ -6,6 +6,7 @@ import openai from "../configs/openai.js";
 
 // Text based AI chat msg controller
 export const textMessageController = async (req, res) => {
+  console.log("TEXT MESSAGE CONTROLLER HIT");
   try {
     const userId = req.user._id;
     if (req.user.credits < 1) {
@@ -25,8 +26,10 @@ export const textMessageController = async (req, res) => {
     });
     await chat.save();
 
+    console.log("AI REQUEST START");
+
     const { choices } = await openai.chat.completions.create({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       messages: [
         {
           role: "user",
@@ -34,7 +37,7 @@ export const textMessageController = async (req, res) => {
         },
       ],
     });
-
+    console.log("AI RESPONSE RECEIVED");
     const reply = {
       ...choices[0].message,
       timestamp: Date.now(),
@@ -56,6 +59,9 @@ export const textMessageController = async (req, res) => {
 
     await User.updateOne({ _id: userId }, { $inc: { credits: -1 } });
   } catch (error) {
+    console.log("Full error:", JSON.stringify(error, null, 2));
+    console.log("Status:", error.status);
+    console.log("Headers:", error.headers);
     res.json({ success: false, message: error.message });
   }
 };

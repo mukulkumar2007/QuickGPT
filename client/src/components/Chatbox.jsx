@@ -10,7 +10,8 @@ import toast from "react-hot-toast";
 const Chatbox = () => {
   const containerRef = useRef(null);
 
-  const { selectedChat, theme, setUser, token, user, axios } = useAppContext();
+  const { selectedChat, theme, setUser, token, user, axios, setSelectedChat } =
+    useAppContext();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +35,7 @@ const Chatbox = () => {
           isImage: false,
         },
       ]);
+
       const { data } = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/message/${mode}`,
         { chatId: selectedChat._id, prompt, isPublished },
@@ -42,11 +44,10 @@ const Chatbox = () => {
       if (data.success) {
         setMessages((prev) => [...prev, data.reply]);
         //decrese credits
-        if (mode === "image") {
-          setUser((prev) => ({ ...prev, credits: prev.credits - 2 }));
-        } else {
-          setUser((prev) => ({ ...prev, credits: prev.credits - 1 }));
-        }
+        setUser((prev) => ({
+          ...prev,
+          credits: mode === "image" ? prev.credits - 2 : prev.credits - 1,
+        }));
       } else {
         toast.error(data.message);
         setPrompt(promptCopy);
@@ -71,6 +72,8 @@ const Chatbox = () => {
   useEffect(() => {
     if (selectedChat) {
       setMessages(selectedChat.message || []);
+    } else {
+      setMessages([]);
     }
   }, [selectedChat]);
 
@@ -78,7 +81,7 @@ const Chatbox = () => {
     <div className="flex-1 flex flex-col justify-between m-5 md:m-10 xl:mx-30 max-md:mt-14 2xl:pr-40">
       {/* Chat Messages */}
       <div ref={containerRef} className="flex-1 mb-5 overflow-y-scroll">
-        {messages?.length === 0 && (
+        {!selectedChat || messages?.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center gap-2 text-primary">
             <img
               src={theme === "dark" ? assets.logo_full : assets.logo_full_dark}
@@ -89,11 +92,11 @@ const Chatbox = () => {
               Ask me Anything.
             </p>
           </div>
+        ) : (
+          messages.map((message, index) => (
+            <Message key={index} message={message} />
+          ))
         )}
-
-        {messages?.map((message, index) => (
-          <Message key={index} message={message} />
-        ))}
       </div>
 
       {/* Three dot Loading */}

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
   const {
     chats,
+    selectedChat,
     setSelectedChat,
     theme,
     setTheme,
@@ -41,7 +42,15 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
         { headers: { Authorization: token } }
       );
       if (data.success) {
-        setChats((prev) => prev.filter((chat) => chat._id !== chatId));
+        const updatedChats = chats.filter((chat) => chat._id !== chatId);
+        console.log(updatedChats.length);
+        setChats(updatedChats);
+
+        if (updatedChats.length > 0) {
+          setSelectedChat(updatedChats[0]);
+        } else {
+          setSelectedChat(null);
+        }
         toast.success(data.message);
       }
     } catch (error) {
@@ -86,13 +95,15 @@ const Sidebar = ({ isMenuOpen, setIsMenuOpen }) => {
       {chats.length > 0 && <p className="mt-4 text-sm">Recent Chats</p>}
       <div className="flex-1 overflow-y-scroll mt-3 text-sm space-y-3">
         {chats
-          .filter((chat) =>
-            chat.messages?.[0]
+          .filter((chat) => {
+            if (!chat) return false;
+
+            return chat.messages?.[0]
               ? chat.messages[0]?.content
                   .toLowerCase()
                   .includes(search.toLowerCase())
-              : chat.name?.toLowerCase().includes(search.toLowerCase())
-          )
+              : chat.name?.toLowerCase().includes(search.toLowerCase());
+          })
           .map((chat) => (
             <div
               key={chat._id}

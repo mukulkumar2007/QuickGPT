@@ -7,12 +7,12 @@ export const createChat = async (req, res) => {
 
     const chatData = {
       userId,
-      messages: [],
+      message: [],
       name: "New Chat",
       userName: req.user.name,
     };
-    await Chat.create(chatData);
-    res.json({ success: true, message: "Chat created" });
+    const chat = await Chat.create(chatData);
+    res.json({ success: true, message: "Chat created", chat });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
@@ -24,7 +24,7 @@ export const getChat = async (req, res) => {
     const userId = req.user._id;
     const chats = await Chat.find({ userId }).sort({ updatedAt: -1 });
     console.log("req.user =", req.user);
-    console.log("req.user_id =", req.user_id);
+    console.log("req.user_id =", req.user._id);
     res.json({ success: true, chats });
   } catch (error) {
     return res.json({ success: false, message: error.message });
