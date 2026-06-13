@@ -29,7 +29,7 @@ export const textMessageController = async (req, res) => {
     console.log("AI REQUEST START");
 
     const { choices } = await openai.chat.completions.create({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       messages: [
         {
           role: "user",
